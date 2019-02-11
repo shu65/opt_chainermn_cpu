@@ -42,7 +42,7 @@ def objective(trial):
     return chainer_log[-1]['elapsed_time']
 
 study = optuna.create_study(study_name='chainermn_cpu', storage='sqlite:///example.db', load_if_exists=True)
-study.optimize(objective, n_trials=100)
+study.optimize(objective, n_trials=1)
 
 print(study.best_params)
 print(study.best_value)

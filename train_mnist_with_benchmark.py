@@ -113,7 +113,7 @@ def main():
         train, args.batchsize, n_processes=args.loaderjob,
         n_prefetch=args.loaderjob)
     test_iter = chainer.iterators.MultiprocessIterator(
-        test, args.val_batchsize, repeat=False, n_processes=args.loaderjob,
+        test, args.batchsize, repeat=False, n_processes=args.loaderjob,
         n_prefetch=args.loaderjob)
 
     updater = training.StandardUpdater(train_iter, optimizer, device=device)
@@ -131,15 +131,18 @@ def main():
     # Some display and output extensions are necessary only for one worker.
     # (Otherwise, there would just be repeated outputs.)
     if comm.rank == 0:
-        trainer.extend(extensions.dump_graph('main/loss'))
-        trainer.extend(extensions.LogReport())
-        trainer.extend(extensions.PrintReport(
-            ['epoch', 'main/loss', 'validation/main/loss',
-             'main/accuracy', 'validation/main/accuracy', 'elapsed_time']))
-        trainer.extend(extensions.ProgressBar())
+        if args.benchmark:
+            trainer.extend(extensions.LogReport(), trigger=stop_trigger)
+        else:
+            trainer.extend(extensions.dump_graph('main/loss'))
+            trainer.extend(extensions.LogReport())
+            trainer.extend(extensions.PrintReport(
+                ['epoch', 'main/loss', 'validation/main/loss',
+                 'main/accuracy', 'validation/main/accuracy', 'elapsed_time']))
+            trainer.extend(extensions.ProgressBar())
 
-    if args.resume:
-        chainer.serializers.load_npz(args.resume, trainer)
+            if args.resume:
+                chainer.serializers.load_npz(args.resume, trainer)
 
     if args.cprofile:
         pr = cProfile.Profile()
