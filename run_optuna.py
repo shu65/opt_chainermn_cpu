@@ -36,13 +36,13 @@ def objective(trial):
 
     print('shell_command:', shell_command)
     run_train(shell_command, working_dir, result_dir=out)
-    chainer_log_file = os.path.join(out, 'log.json')
+    chainer_log_file = os.path.join(out, 'log')
     with open(chainer_log_file) as f:
         chainer_log = json.load(f)
     return chainer_log[-1]['elapsed_time']
 
 study = optuna.create_study(study_name='chainermn_cpu', storage='sqlite:///example.db', load_if_exists=True)
-study.optimize(objective, n_trials=1)
+study.optimize(objective, n_trials=50)
 
 print(study.best_params)
 print(study.best_value)
